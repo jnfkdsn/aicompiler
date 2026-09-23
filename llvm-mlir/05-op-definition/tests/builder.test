@@ -1,0 +1,6 @@
+# RUN: %lab-build | %lab-opt | %FileCheck %s
+# RUN: not %lab-build invalid > %t 2> %t.err
+# RUN: %FileCheck %s --check-prefix=INVALID < %t.err
+# CHECK: lab.clamp {{.*}} bounds(-4, 7) : i32
+# INVALID: builder completed; input_type=i32 lower=8 upper=7
+# INVALID: 'lab.clamp' op requires lower <= upper (signed i32)

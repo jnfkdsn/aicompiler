@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.20)
+project(mlir_rewriting_examples LANGUAGES C CXX)
+find_package(MLIR REQUIRED CONFIG)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_executable(rewriting-demo rewriting_demo.cpp)
+target_include_directories(rewriting-demo SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS} ${MLIR_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+if(NOT LLVM_ENABLE_RTTI)
+  target_compile_options(rewriting-demo PRIVATE -fno-rtti)
+endif()
+target_link_libraries(rewriting-demo PRIVATE MLIRParser MLIRIR MLIRArithDialect
+  MLIRFuncDialect MLIRTransforms MLIRRewrite MLIRSupport)

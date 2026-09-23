@@ -1,0 +1,8 @@
+# RUN: %lab-opt --help | %FileCheck %s --check-prefix=HELP
+# RUN: not %lab-opt %S/../input.mlir --pass-pipeline='builtin.module(lab-remove-add-zero)' 2>&1 | %FileCheck %s --check-prefix=SCOPE
+# RUN: not %lab-opt %S/../input.mlir --pass-pipeline='builtin.module(func.func(lab-unknown-pass))' 2>&1 | %FileCheck %s --check-prefix=UNKNOWN
+# HELP: --lab-remove-add-zero
+# SCOPE: Can't add pass
+# SCOPE-SAME: func.func
+# SCOPE-SAME: builtin.module
+# UNKNOWN: lab-unknown-pass

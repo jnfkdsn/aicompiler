@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.20)
+project(mlir_ir_api_examples LANGUAGES C CXX)
+find_package(MLIR REQUIRED CONFIG)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_executable(ir-api-demo ir_api_demo.cpp)
+target_include_directories(ir-api-demo SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS} ${MLIR_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+if(NOT LLVM_ENABLE_RTTI)
+  target_compile_options(ir-api-demo PRIVATE -fno-rtti)
+endif()
+target_link_libraries(ir-api-demo PRIVATE MLIRParser MLIRIR MLIRArithDialect
+  MLIRFuncDialect MLIRSideEffectInterfaces MLIRSupport)
