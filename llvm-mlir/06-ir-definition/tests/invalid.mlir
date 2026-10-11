@@ -1,9 +1,9 @@
 // type-bounds
 module {
 // expected-error@+1 {{expected ordered bounds}}
-  func.func @clip(%x: i32) -> !lesson.range<8, 7> {
-    %r = lesson.limit %x bounds(#lesson.bounds<-4, 7>) : !lesson.range<8, 7>
-    return %r : !lesson.range<8, 7>
+  func.func @clip(%x: i32) -> !my.range<8, 7> {
+    %r = my.limit %x bounds(#my.bounds<-4, 7>) : !my.range<8, 7>
+    return %r : !my.range<8, 7>
   }
 }
 
@@ -11,10 +11,10 @@ module {
 
 // attr-bounds
 module {
-  func.func @clip(%x: i32) -> !lesson.range<-4, 7> {
+  func.func @clip(%x: i32) -> !my.range<-4, 7> {
 // expected-error@+1 {{expected ordered bounds}}
-    %r = lesson.limit %x bounds(#lesson.bounds<8, 7>) : !lesson.range<-4, 7>
-    return %r : !lesson.range<-4, 7>
+    %r = my.limit %x bounds(#my.bounds<8, 7>) : !my.range<-4, 7>
+    return %r : !my.range<-4, 7>
   }
 }
 
@@ -22,10 +22,10 @@ module {
 
 // attr-i32-overflow
 module {
-  func.func @clip(%x: i32) -> !lesson.range<-4, 7> {
+  func.func @clip(%x: i32) -> !my.range<-4, 7> {
 // expected-error@+1 {{expected ordered bounds}}
-    %r = lesson.limit %x bounds(#lesson.bounds<-4, 2147483648>) : !lesson.range<-4, 7>
-    return %r : !lesson.range<-4, 7>
+    %r = my.limit %x bounds(#my.bounds<-4, 2147483648>) : !my.range<-4, 7>
+    return %r : !my.range<-4, 7>
   }
 }
 
@@ -34,9 +34,9 @@ module {
 // type-i32-underflow
 module {
 // expected-error@+1 {{expected ordered bounds}}
-  func.func @clip(%x: i32) -> !lesson.range<-2147483649, 7> {
-    %r = lesson.limit %x bounds(#lesson.bounds<-4, 7>) : !lesson.range<-2147483649, 7>
-    return %r : !lesson.range<-2147483649, 7>
+  func.func @clip(%x: i32) -> !my.range<-2147483649, 7> {
+    %r = my.limit %x bounds(#my.bounds<-4, 7>) : !my.range<-2147483649, 7>
+    return %r : !my.range<-2147483649, 7>
   }
 }
 
@@ -44,10 +44,10 @@ module {
 
 // limit-mismatch
 module {
-  func.func @clip(%x: i32) -> !lesson.range<-4, 8> {
+  func.func @clip(%x: i32) -> !my.range<-4, 8> {
 // expected-error@+1 {{result range must match bounds attribute}}
-    %r = lesson.limit %x bounds(#lesson.bounds<-4, 7>) : !lesson.range<-4, 8>
-    return %r : !lesson.range<-4, 8>
+    %r = my.limit %x bounds(#my.bounds<-4, 7>) : !my.range<-4, 8>
+    return %r : !my.range<-4, 8>
   }
 }
 
@@ -55,25 +55,25 @@ module {
 
 // scope-entry
 module {
-  func.func @clip_inside(%x: i32) -> !lesson.range<-4, 7> {
+  func.func @clip_inside(%x: i32) -> !my.range<-4, 7> {
 // expected-error@+1 {{entry argument types must match input types}}
-    %r = "lesson.scope"(%x) ({
+    %r = "my.scope"(%x) ({
     ^bb0(%local: i32, %extra: i64):
-      %clipped = lesson.limit %local bounds(#lesson.bounds<-4, 7>) : !lesson.range<-4, 7>
-      lesson.yield %clipped : !lesson.range<-4, 7>
-    }) : (i32) -> !lesson.range<-4, 7>
-    return %r : !lesson.range<-4, 7>
+      %clipped = my.limit %local bounds(#my.bounds<-4, 7>) : !my.range<-4, 7>
+      my.yield %clipped : !my.range<-4, 7>
+    }) : (i32) -> !my.range<-4, 7>
+    return %r : !my.range<-4, 7>
   }
   func.func @swap(%x: i32, %y: i64) -> (i64, i32) {
-    %r:2 = "lesson.scope"(%x, %y) ({
+    %r:2 = "my.scope"(%x, %y) ({
     ^bb0(%a: i32, %b: i64):
-      lesson.yield %b, %a : i64, i32
+      my.yield %b, %a : i64, i32
     }) : (i32, i64) -> (i64, i32)
     return %r#0, %r#1 : i64, i32
   }
   func.func @empty() {
-    "lesson.scope"() ({
-      lesson.yield
+    "my.scope"() ({
+      my.yield
     }) : () -> ()
     return
   }
@@ -83,25 +83,25 @@ module {
 
 // scope-exit
 module {
-  func.func @clip_inside(%x: i32) -> !lesson.range<-4, 7> {
-    %r = "lesson.scope"(%x) ({
+  func.func @clip_inside(%x: i32) -> !my.range<-4, 7> {
+    %r = "my.scope"(%x) ({
     ^bb0(%local: i32):
-      %clipped = lesson.limit %local bounds(#lesson.bounds<-4, 7>) : !lesson.range<-4, 7>
-      lesson.yield %clipped : !lesson.range<-4, 7>
-    }) : (i32) -> !lesson.range<-4, 7>
-    return %r : !lesson.range<-4, 7>
+      %clipped = my.limit %local bounds(#my.bounds<-4, 7>) : !my.range<-4, 7>
+      my.yield %clipped : !my.range<-4, 7>
+    }) : (i32) -> !my.range<-4, 7>
+    return %r : !my.range<-4, 7>
   }
   func.func @swap(%x: i32, %y: i64) -> (i64, i32) {
 // expected-error@+1 {{yield types must match result types}}
-    %r:2 = "lesson.scope"(%x, %y) ({
+    %r:2 = "my.scope"(%x, %y) ({
     ^bb0(%a: i32, %b: i64):
-      lesson.yield %a, %b : i32, i64
+      my.yield %a, %b : i32, i64
     }) : (i32, i64) -> (i64, i32)
     return %r#0, %r#1 : i64, i32
   }
   func.func @empty() {
-    "lesson.scope"() ({
-      lesson.yield
+    "my.scope"() ({
+      my.yield
     }) : () -> ()
     return
   }
@@ -111,26 +111,26 @@ module {
 
 // scope-capture
 module {
-  func.func @clip_inside(%x: i32) -> !lesson.range<-4, 7> {
+  func.func @clip_inside(%x: i32) -> !my.range<-4, 7> {
 // expected-note@+1 {{required by region isolation constraints}}
-    %r = "lesson.scope"(%x) ({
+    %r = "my.scope"(%x) ({
     ^bb0(%local: i32):
 // expected-error@+1 {{using value defined outside the region}}
-      %clipped = lesson.limit %x bounds(#lesson.bounds<-4, 7>) : !lesson.range<-4, 7>
-      lesson.yield %clipped : !lesson.range<-4, 7>
-    }) : (i32) -> !lesson.range<-4, 7>
-    return %r : !lesson.range<-4, 7>
+      %clipped = my.limit %x bounds(#my.bounds<-4, 7>) : !my.range<-4, 7>
+      my.yield %clipped : !my.range<-4, 7>
+    }) : (i32) -> !my.range<-4, 7>
+    return %r : !my.range<-4, 7>
   }
   func.func @swap(%x: i32, %y: i64) -> (i64, i32) {
-    %r:2 = "lesson.scope"(%x, %y) ({
+    %r:2 = "my.scope"(%x, %y) ({
     ^bb0(%a: i32, %b: i64):
-      lesson.yield %b, %a : i64, i32
+      my.yield %b, %a : i64, i32
     }) : (i32, i64) -> (i64, i32)
     return %r#0, %r#1 : i64, i32
   }
   func.func @empty() {
-    "lesson.scope"() ({
-      lesson.yield
+    "my.scope"() ({
+      my.yield
     }) : () -> ()
     return
   }
@@ -141,7 +141,7 @@ module {
 // scope-empty-region
 module {
 // expected-error@+1 {{requires a nonempty body}}
-  "lesson.scope"() ({}) : () -> ()
+  "my.scope"() ({}) : () -> ()
 }
 
 // -----
@@ -149,10 +149,10 @@ module {
 // scope-two-blocks
 module {
 // expected-error@+1 {{expects region #0 to have 0 or 1 blocks}}
-  "lesson.scope"() ({
-    lesson.yield
+  "my.scope"() ({
+    my.yield
   ^bb1:
-    lesson.yield
+    my.yield
   }) : () -> ()
 }
 
@@ -160,8 +160,8 @@ module {
 
 // wrong-yield-parent
 module {
-// expected-error@+1 {{expects parent op 'lesson.scope'}}
-  lesson.yield
+// expected-error@+1 {{expects parent op 'my.scope'}}
+  my.yield
 }
 
 // -----
@@ -169,7 +169,7 @@ module {
 // scope-wrong-terminator
 module {
   func.func @bad() {
-    "lesson.scope"() ({
+    "my.scope"() ({
 // expected-error@+1 {{expects parent op 'func.func'}}
       return
     }) : () -> ()
@@ -183,7 +183,7 @@ module {
 module {
   func.func @same(%x: i32) -> i32 {
 // expected-error@+1 {{expected 'same'}}
-    %r = lesson.identity different %x {tag = "demo"} : i32
+    %r = my.identity different %x {tag = "demo"} : i32
     return %r : i32
   }
 }
@@ -194,7 +194,7 @@ module {
 module {
   func.func @same(%x: i64) -> i64 {
 // expected-error@+1 {{operand #0 must be 32-bit signless integer}}
-    %r = lesson.identity same %x {tag = "demo"} : i64
+    %r = my.identity same %x {tag = "demo"} : i64
     return %r : i64
   }
 }
@@ -203,8 +203,8 @@ module {
 
 // return-no-subtyping
 module {
-  func.func @bad(%x: !lesson.range<-4, 7>) -> !lesson.range<-4, 8> {
+  func.func @bad(%x: !my.range<-4, 7>) -> !my.range<-4, 8> {
 // expected-error@+1 {{type of return operand 0}}
-    return %x : !lesson.range<-4, 7>
+    return %x : !my.range<-4, 7>
   }
 }

@@ -1,4 +1,4 @@
-#include "LabOps.h"
+#include "MyOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -8,9 +8,9 @@
 using namespace mlir;
 namespace {
 // BEGIN: expand
-struct ExpandClamp : OpRewritePattern<lab::ClampOp> {
+struct ExpandClamp : OpRewritePattern<my::ClampOp> {
   explicit ExpandClamp(MLIRContext *context) : OpRewritePattern(context, 1) {}
-  LogicalResult matchAndRewrite(lab::ClampOp op,
+  LogicalResult matchAndRewrite(my::ClampOp op,
                                PatternRewriter &rewriter) const override {
     auto lower = rewriter.create<arith::ConstantOp>(op.getLoc(), op.getLowerAttr());
     auto upper = rewriter.create<arith::ConstantOp>(op.getLoc(), op.getUpperAttr());
@@ -22,8 +22,8 @@ struct ExpandClamp : OpRewritePattern<lab::ClampOp> {
 // END: expand
 struct ExpandClampPass : PassWrapper<ExpandClampPass, OperationPass<func::FuncOp>> {
   MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(ExpandClampPass)
-  StringRef getArgument() const final { return "lab-expand-clamp"; }
-  StringRef getDescription() const final { return "Expand lab.clamp into signed arith min/max"; }
+  StringRef getArgument() const final { return "my-expand-clamp"; }
+  StringRef getDescription() const final { return "Expand my.clamp into signed arith min/max"; }
   void getDependentDialects(DialectRegistry &registry) const override {
     registry.insert<arith::ArithDialect>();
   }
@@ -36,4 +36,4 @@ struct ExpandClampPass : PassWrapper<ExpandClampPass, OperationPass<func::FuncOp
   }
 };
 }
-void registerLabExpansion() { PassRegistration<ExpandClampPass>(); }
+void registerMyExpansion() { PassRegistration<ExpandClampPass>(); }

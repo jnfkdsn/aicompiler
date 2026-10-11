@@ -1,16 +1,16 @@
-#ifndef LESSON_H
-#define LESSON_H
+#ifndef MY_OPS_H
+#define MY_OPS_H
 #include "mlir/Bytecode/BytecodeOpInterface.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
-#include "LessonDialect.h.inc"
+#include "MyDialect.h.inc"
 #define GET_TYPEDEF_CLASSES
-#include "LessonTypes.h.inc"
+#include "MyTypes.h.inc"
 #define GET_ATTRDEF_CLASSES
-#include "LessonAttrs.h.inc"
-#include "LessonInterfaces.h.inc"
+#include "MyAttrs.h.inc"
+#include "MyInterfaces.h.inc"
 #define GET_OP_CLASSES
-#include "LessonOps.h.inc"
+#include "MyOps.h.inc"
 #endif

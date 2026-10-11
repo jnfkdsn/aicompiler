@@ -40,15 +40,19 @@ def main():
     regions = {name: textwrap.dedent(code).strip() for name, code in re.findall(
         r"// BEGIN: ([\w-]+)\n(.*?)\s*// END: \1", sources, re.S)}
     snippets = re.findall(r"<!-- source-example: ([\w-]+) -->\s*```(?:cpp|text)\n(.*?)\n```", content, re.S)
-    check("all-source-regions", set(regions) == {n for n, _ in snippets} and len(regions) == len(snippets))
+    # The chapter selects the code needed for its explanation. Registration
+    # and tool setup are covered by the introductory tutorial and the lab.
+    snippet_names = [name for name, _ in snippets]
+    check("chapter-core-source-regions", {"clamp", "verify", "builder", "expand"} <= set(snippet_names))
+    check("unique-source-regions", len(set(snippet_names)) == len(snippet_names))
     for name, code in snippets:
         check("source-" + name, regions.get(name) == code.strip())
-    matches = re.findall(r"<!-- lab-(example|invalid): ([^\n]+?) -->\s*```text\n(.*?)\n```", content, re.S)
+    matches = re.findall(r"<!-- opdef-(example|invalid): ([^\n]+?) -->\s*```text\n(.*?)\n```", content, re.S)
     examples = {spec.split("|", 1)[0].strip(): code for kind, spec, code in matches if kind == "example"}
     check("unique-example-ids", len({spec.split('|', 1)[0].strip() for _, spec, _ in matches}) == len(matches))
     check("expected-inputs", set(examples) == {"op-definition-input", "op-definition-custom",
                                              "op-definition-generic", "op-definition-expanded"})
-    opt = build / "lab-dialect-opt"
+    opt = build / "my-opt"
     for kind, spec, code in matches:
         parts = spec.split("|", 1)
         name = parts[0].strip()
@@ -66,19 +70,19 @@ def main():
     base = out / "op-definition-input.mlir"
     custom = run("display-custom", [opt, base])
     generic = run("display-generic", [opt, base, "--mlir-print-op-generic"])
-    expanded = run("display-expanded", [opt, base, "--pass-pipeline=builtin.module(func.func(lab-expand-clamp))", "--verify-each"])
+    expanded = run("display-expanded", [opt, base, "--pass-pipeline=builtin.module(func.func(my-expand-clamp))", "--verify-each"])
     for mode, result in [("custom", custom), ("generic", generic), ("expanded", expanded)]:
         check("displayed-" + mode, result.stdout.strip() == examples["op-definition-" + mode].strip())
     expanded_path = out / "actual-expanded.mlir"
     expanded_path.write_text(expanded.stdout)
     run("expanded-standard-tool", [llvm / "mlir-opt", expanded_path])
-    made = run("builder", [build / "lab-build"])
+    made = run("builder", [build / "my-build"])
     check("builder-equals-parsed", made.stdout == custom.stdout)
     check("builder-accessors", "builder completed; input_type=i32 lower=-4 upper=7" in made.stderr)
-    rejected = run("builder-invalid", [build / "lab-build", "invalid"], expected=1)
+    rejected = run("builder-invalid", [build / "my-build", "invalid"], expected=1)
     check("builder-does-not-auto-verify", "builder completed; input_type=i32 lower=8 upper=7" in rejected.stderr
           and "requires lower <= upper (signed i32)" in rejected.stderr)
-    header, impl = (build / "LabOps.h.inc").read_text(), (build / "LabOps.cpp.inc").read_text()
+    header, impl = (build / "MyOps.h.inc").read_text(), (build / "MyOps.cpp.inc").read_text()
     for token in ("getInput()", "getLowerAttr()", "getResult()", "uint32_t getLower();"):
         check("generated-" + token, token in header)
     check("generated-builder-properties", "odsState.getOrAddProperties<Properties>().lower = lower;" in impl)

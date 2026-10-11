@@ -1,31 +1,31 @@
-#include "Lesson.h"
+#include "MyOps.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/DialectImplementation.h"
 #include "mlir/IR/OpImplementation.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include <limits>
 using namespace mlir;
-using namespace mlir::lesson;
-#include "LessonDialect.cpp.inc"
+using namespace mlir::my;
+#include "MyDialect.cpp.inc"
 #define GET_TYPEDEF_CLASSES
-#include "LessonTypes.cpp.inc"
+#include "MyTypes.cpp.inc"
 #define GET_ATTRDEF_CLASSES
-#include "LessonAttrs.cpp.inc"
-#include "LessonInterfaces.cpp.inc"
+#include "MyAttrs.cpp.inc"
+#include "MyInterfaces.cpp.inc"
 #define GET_OP_CLASSES
-#include "LessonOps.cpp.inc"
-void LessonDialect::initialize() {
+#include "MyOps.cpp.inc"
+void MyDialect::initialize() {
  addTypes<
 #define GET_TYPEDEF_LIST
-#include "LessonTypes.cpp.inc"
+#include "MyTypes.cpp.inc"
  >();
  addAttributes<
 #define GET_ATTRDEF_LIST
-#include "LessonAttrs.cpp.inc"
+#include "MyAttrs.cpp.inc"
  >();
  addOperations<
 #define GET_OP_LIST
-#include "LessonOps.cpp.inc"
+#include "MyOps.cpp.inc"
  >();
 }
 static LogicalResult verifyBounds(function_ref<InFlightDiagnostic()> emitError, int64_t lower, int64_t upper) {
@@ -78,10 +78,10 @@ LogicalResult ScopeOp::verify() {
 LogicalResult ScopeOp::verifyRegions() {
  Block &entry = getBody().front();
  if (entry.empty())
-   return emitOpError("requires a lesson.yield terminator");
+   return emitOpError("requires a my.yield terminator");
  auto yield = dyn_cast<YieldOp>(entry.back());
  if (!yield)
-   return emitOpError("requires a lesson.yield terminator");
+   return emitOpError("requires a my.yield terminator");
  if (yield.getValues().getTypes() != getOutputs().getTypes())
    return emitOpError("yield types must match result types");
  return success();

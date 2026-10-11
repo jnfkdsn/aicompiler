@@ -1,17 +1,17 @@
-#include "LabOps.h"
+#include "MyOps.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/OpImplementation.h"
 using namespace mlir;
-using namespace mlir::lab;
-#include "LabDialect.cpp.inc"
+using namespace mlir::my;
+#include "MyDialect.cpp.inc"
 #define GET_OP_CLASSES
-#include "LabOps.cpp.inc"
+#include "MyOps.cpp.inc"
 
 // BEGIN: initialize
-void LabDialect::initialize() {
+void MyDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
-#include "LabOps.cpp.inc"
+#include "MyOps.cpp.inc"
       >();
 }
 // END: initialize

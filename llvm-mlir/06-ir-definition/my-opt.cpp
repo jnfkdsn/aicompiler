@@ -1,5 +1,4 @@
-#include "Lesson.h"
-#include "LabOps.h"
+#include "MyOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
@@ -9,21 +8,21 @@
 using namespace mlir;
 namespace {
 // BEGIN: external-model
-struct ClampBoundsModel : lesson::StaticBounds::ExternalModel<ClampBoundsModel, lab::ClampOp> {
- int64_t getMinimum(Operation *op) const { return cast<lab::ClampOp>(op).getLowerAttr().getInt(); }
- int64_t getMaximum(Operation *op) const { return cast<lab::ClampOp>(op).getUpperAttr().getInt(); }
+struct OpaqueClampBoundsModel : my::StaticBounds::ExternalModel<OpaqueClampBoundsModel, my::OpaqueClampOp> {
+ int64_t getMinimum(Operation *op) const { return cast<my::OpaqueClampOp>(op).getLowerAttr().getInt(); }
+ int64_t getMaximum(Operation *op) const { return cast<my::OpaqueClampOp>(op).getUpperAttr().getInt(); }
 };
 // END: external-model
 struct ReportPass : PassWrapper<ReportPass, OperationPass<func::FuncOp>> {
  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(ReportPass)
- StringRef getArgument() const final { return "lesson-report"; }
+ StringRef getArgument() const final { return "my-report"; }
  void runOnOperation() override {
   getOperation().walk([](Operation *op) {
-   if (op->getName().getDialectNamespace() != "lab" && op->getName().getDialectNamespace() != "lesson") return;
+   if (op->getName().getDialectNamespace() != "my") return;
    llvm::errs() << op->getName() << " effect_interface=" << isa<MemoryEffectOpInterface>(op)
      << " speculatable=" << isSpeculatable(op) << " dead=" << isOpTriviallyDead(op);
    // BEGIN: consumer
-   if (auto bounds = dyn_cast<lesson::StaticBounds>(op))
+   if (auto bounds = dyn_cast<my::StaticBounds>(op))
      llvm::errs() << " bounds=[" << bounds.getMinimum() << "," << bounds.getMaximum() << "]";
    else
      llvm::errs() << " bounds=unknown";
@@ -37,11 +36,11 @@ int main(int argc, char **argv) {
  registerTransformsPasses();
  PassRegistration<ReportPass>();
  DialectRegistry registry;
- registry.insert<lesson::LessonDialect, lab::LabDialect, arith::ArithDialect, func::FuncDialect>();
+ registry.insert<my::MyDialect, arith::ArithDialect, func::FuncDialect>();
 #ifndef OMIT_MODEL
  // BEGIN: attach
- registry.addExtension(+[](MLIRContext *context, lab::LabDialect *) {
-   lab::ClampOp::attachInterface<ClampBoundsModel>(*context);
+ registry.addExtension(+[](MLIRContext *context, my::MyDialect *) {
+   my::OpaqueClampOp::attachInterface<OpaqueClampBoundsModel>(*context);
  });
  // END: attach
 #endif

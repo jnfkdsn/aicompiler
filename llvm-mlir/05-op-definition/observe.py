@@ -35,7 +35,7 @@ def main():
         "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_CXX_COMPILER=/usr/bin/clang++",
         "-DCMAKE_C_COMPILER=/usr/bin/clang"], show=False)
     run("build", ["cmake", "--build", build, "-j", "2"], show=False)
-    opt = build / "lab-dialect-opt"
+    opt = build / "my-opt"
     path = (args.input or project / "input.mlir").resolve()
     print("\n1. 解析并验证，自定义格式：", flush=True)
     run("custom", [opt, path])
@@ -45,16 +45,16 @@ def main():
     generic_path.write_text(generic.stdout)
     run("roundtrip", [opt, generic_path], show=False)
     print("\n3. C++ builder 创建独立的 clip 函数：", flush=True)
-    run("builder", [build / "lab-build"])
+    run("builder", [build / "my-build"])
     print("\n4. Pass 展开为 arith：", flush=True)
-    run("expanded", [opt, path, "--pass-pipeline=builtin.module(func.func(lab-expand-clamp))", "--verify-each"])
+    run("expanded", [opt, path, "--pass-pipeline=builtin.module(func.func(my-expand-clamp))", "--verify-each"])
     print("\n5. builder 能构造上下界颠倒的对象；显式验证拒绝它：", flush=True)
-    invalid = run("invalid-builder", [build / "lab-build", "invalid"], expected=1, show=False)
+    invalid = run("invalid-builder", [build / "my-build", "invalid"], expected=1, show=False)
     print(invalid.stderr, end="")
     if args.test:
         print("\n运行 lit 正反例：", flush=True)
         run("lit", [llvm / "bin/llvm-lit", "-v", project / "tests"])
-    print(f"\n生成源码：{build}/LabOps.h.inc 与 LabOps.cpp.inc")
+    print(f"\n生成源码：{build}/MyOps.h.inc 与 MyOps.cpp.inc")
     print(f"本次观察记录：{out}")
 
 

@@ -1,4 +1,4 @@
-#include "LabOps.h"
+#include "MyOps.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   if (argc > 2 || (argc == 2 && !invalid))
     return 2;
   MLIRContext context;
-  context.loadDialect<lab::LabDialect, func::FuncDialect>();
+  context.loadDialect<my::MyDialect, func::FuncDialect>();
   OpBuilder builder(&context);
   auto loc = builder.getUnknownLoc();
   OwningOpRef<ModuleOp> module = ModuleOp::create(loc);
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   builder.setInsertionPointToStart(entry);
   Value x = entry->getArgument(0);
   // BEGIN: builder
-  auto clamp = builder.create<lab::ClampOp>(
+  auto clamp = builder.create<my::ClampOp>(
       loc, builder.getI32Type(), x,
       builder.getI32IntegerAttr(invalid ? 8 : -4), builder.getI32IntegerAttr(7));
   builder.create<func::ReturnOp>(loc, clamp.getResult());

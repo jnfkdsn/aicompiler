@@ -16,5 +16,5 @@ if(NOT LLVM_ENABLE_RTTI)
 endif()
 add_subdirectory(../../05-op-definition reference EXCLUDE_FROM_ALL)
 add_executable(student-opt student-opt.cpp Exercise.cpp)
-target_link_libraries(student-opt PRIVATE LabOps MLIROptLib MLIRFuncDialect
+target_link_libraries(student-opt PRIVATE MyOps MLIROptLib MLIRFuncDialect
   MLIRArithDialect MLIRPass MLIRTransforms MLIRRewrite)

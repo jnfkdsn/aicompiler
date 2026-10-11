@@ -11,16 +11,16 @@
 第一站读自己已经认识的定义：
 
 ```bash
-rg -n 'I32:|I32Attr:|hasVerifier' aicompiler-labs/llvm-mlir/05-op-definition/LabOps.td
-rg -n 'ClampOp::verify' aicompiler-labs/llvm-mlir/05-op-definition/LabOps.cpp
+rg -n 'I32:|I32Attr:|hasVerifier' aicompiler-labs/llvm-mlir/05-op-definition/MyOps.td
+rg -n 'ClampOp::verify' aicompiler-labs/llvm-mlir/05-op-definition/MyOps.cpp
 ```
 
-把 ODS 字段类型约束与手写上下界检查分开。此处 `LabOps.cpp` 是课程示例源码，还不是 MLIR 框架内部。
+把 ODS 字段类型约束与手写上下界检查分开。此处 `MyOps.cpp` 是课程示例源码，还不是 MLIR 框架内部。
 
 第二站读构建生成的连接层：
 
 ```bash
-rg -n 'ClampOp::verifyInvariantsImpl|ClampOp::verifyInvariants|local_type_constraint' artifacts/builds/mlir-exercise-clamp/reference/LabOps.cpp.inc
+rg -n 'ClampOp::verifyInvariantsImpl|ClampOp::verifyInvariants|local_type_constraint' artifacts/builds/mlir-exercise-clamp/reference/MyOps.cpp.inc
 ```
 
 先看 `ClampOp::verifyInvariants`，确定它怎样连接生成检查与手写 `verify()`。再读 `verifyInvariantsImpl` 中 operand/result 检查的一段，沿相应 `local_type_constraint` 找到类型约束。只追到看清它检查了什么，不继续研究 TableGen 生成器。

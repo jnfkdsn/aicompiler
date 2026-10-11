@@ -2,7 +2,7 @@
 
 这组观察配套 blog 的 `compiler/ir_definition/traits_interfaces.md`、`types_attributes.md`、`regions_assembly.md`、`assembly_format.md`。先沿正文理解机制，再选择一个小变化预测并观察；不要求先运行工程才能读懂正文。
 
-工程复用 `../05-op-definition/` 的 Lab dialect，新增 `lesson` dialect。两个方言在同一工具中共存；前一个实验的源码不需要修改。
+本工程是教学方言 `my` 的扩展阶段：`my.clamp` 增加直接范围接口，再引入类型、属性和区域操作。它独立构建，不链接 `05-op-definition` 的基础定义，避免在同一工具中重复注册 `my.clamp`。各阶段是供章节观察的独立版本，不是需要同时加载的多个方言。
 
 ## 按章观察
 
@@ -19,15 +19,15 @@ python3 aicompiler-labs/llvm-mlir/06-ir-definition/observe.py --section assembly
 
 | 输入/工具 | 先预测 | 应观察到 |
 |---|---|---|
-| `interfaces.mlir` | 两个结果无人使用，通用工具有足够事实删除谁？ | lab.clamp 被删除；缺少效果信息的 opaque_clamp 保留 |
-| `direct.mlir` | 不引入自定义类型，操作怎样直接回答查询？ | lesson.clamp 的成员方法返回 [-4,7]；不注册外部模型也可查询 |
-| `lesson-opt` / `lesson-opt-no-model` | 移除外部范围模型会同时改变 DCE 吗？ | clamp 的 bounds 变 unknown；原有 Pure 信息及 dead 判断不变 |
+| `interfaces.mlir` | 两个结果无人使用，通用工具有足够事实删除谁？ | my.clamp 被删除；缺少效果信息的 opaque_clamp 保留 |
+| `direct.mlir` | 不引入自定义类型，操作怎样直接回答查询？ | my.clamp 的成员方法返回 [-4,7]；不注册外部模型也可查询 |
+| `my-opt` / `my-opt-no-model` | 移除外部范围模型会同时改变 DCE 吗？ | opaque_clamp 的 bounds 变 unknown，dead 始终为 0；直接实现接口的 clamp 始终能回答范围查询 |
 | `types.mlir` | 属性与结果类型保存相同区间，会不会成为同一对象？ | 通用格式显示两类字段；直接范围接口可以回答 [-4,7] |
 | `type-probe` | 两次请求相同参数，会得到相等的类型吗？ | same_parameters=1；不同参数比较为 0；非法 checked 请求诊断后返回空句柄 |
 | `scope.mlir` | 哪些值进入，哪些值退出？ | 单值 clamp、多结果 swap、空参数/结果三个结构均合法 |
 | `assembly.mlir` | 通用打印会丢失 same 语法或 tag 吗？ | 通用格式不写 same；再次正常打印恢复关键字，tag 和引用关系保留 |
 
-`types.mlir` 刻意书写完整的 `#lesson.bounds` 和 `!lesson.range`。由于 ODS 已知道 limit 的具体属性/结果类型种类，正常打印可将操作中的字段缩写成 `bounds(<-4, 7>) : <-4, 7>`；函数签名等通用类型位置仍带前缀。它们表示同一对象，不是另一种计算。
+`types.mlir` 刻意书写完整的 `#my.bounds` 和 `!my.range`。由于 ODS 已知道 limit 的具体属性/结果类型种类，正常打印可将操作中的字段缩写成 `bounds(<-4, 7>) : <-4, 7>`；函数签名等通用类型位置仍带前缀。它们表示同一对象，不是另一种计算。
 
 ## 单独运行工具
 
@@ -43,32 +43,32 @@ cmake -S aicompiler-labs/llvm-mlir/06-ir-definition \
   -DCMAKE_C_COMPILER=/usr/bin/clang
 cmake --build artifacts/builds/mlir-ir-definition -j2
 
-artifacts/builds/mlir-ir-definition/lesson-opt \
+artifacts/builds/mlir-ir-definition/my-opt \
   aicompiler-labs/llvm-mlir/06-ir-definition/interfaces.mlir \
-  --pass-pipeline='builtin.module(func.func(lesson-report))'
+  --pass-pipeline='builtin.module(func.func(my-report))'
 
-artifacts/builds/mlir-ir-definition/lesson-opt \
+artifacts/builds/mlir-ir-definition/my-opt \
   aicompiler-labs/llvm-mlir/06-ir-definition/interfaces.mlir \
   --canonicalize --verify-each
 
-artifacts/builds/mlir-ir-definition/lesson-opt \
+artifacts/builds/mlir-ir-definition/my-opt \
   aicompiler-labs/llvm-mlir/06-ir-definition/scope.mlir \
   --mlir-print-op-generic
 ```
 
-`lesson-report` 输出到 stderr，IR 输出到 stdout。`type-probe` 最后一项故意请求非法区间，诊断是预期现象，程序处理失败后仍返回成功。
+`my-report` 输出到 stderr，IR 输出到 stdout。`type-probe` 最后一项故意请求非法区间，诊断是预期现象，程序处理失败后仍返回成功。
 
 ## 源码怎样找
 
 | 文件 | 主要责任 |
 |---|---|
-| `Lesson.td` | 接口、Type/Attr、操作及结构/效果声明 |
-| `Lesson.h` / `Lesson.cpp` | 生成代码接入、dialect 注册、参数和区域验证、手写格式 |
-| `lesson-opt.cpp` | 报告 Pass、外部模型与 Context 注册；构建两个对照工具 |
+| `MyOps.td` | 接口、Type/Attr、操作及结构/效果声明 |
+| `MyOps.h` / `MyOps.cpp` | 生成代码接入、dialect 注册、参数和区域验证、手写格式 |
+| `my-opt.cpp` | 报告 Pass、外部模型与 Context 注册；构建两个对照工具 |
 | `type-probe.cpp` | 类型 uniquing 与 checked 构造 |
 | `tests/invalid.mlir` | 15 个预期失败模块：参数、跨字段、区域、隔离与语法 |
 
-范围接口只承诺静态结果边界，工具只报告它，没有实现范围分析或比较折叠。`lesson.limit` 和 `lesson.scope` 尚未提供 lowering，不可据打印结果声称已执行数值计算。`lesson.scope` 目前没有 RegionBranchOpInterface，多组 variadic 分段也只在正文解释，未在工程中实现。
+范围接口只承诺静态结果边界，工具只报告它，没有实现范围分析或比较折叠。`my.limit` 和 `my.scope` 尚未提供 lowering，不可据打印结果声称已执行数值计算。`my.scope` 目前没有 RegionBranchOpInterface，多组 variadic 分段也只在正文解释，未在工程中实现。
 
 ## 阅读后再选一个变化
 
@@ -84,7 +84,7 @@ artifacts/builds/mlir-ir-definition/lesson-opt \
 ```bash
 python3 aicompiler-labs/llvm-mlir/docs/validate_ir_definition.py
 
-artifacts/builds/mlir-ir-definition/lesson-opt \
+artifacts/builds/mlir-ir-definition/my-opt \
   aicompiler-labs/llvm-mlir/06-ir-definition/tests/invalid.mlir \
   --split-input-file --verify-diagnostics -o /dev/null
 ```

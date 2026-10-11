@@ -1,13 +1,13 @@
-#include "LabOps.h"
+#include "MyOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
-void registerLabExpansion();
+void registerMyExpansion();
 // BEGIN: main
 int main(int argc, char **argv) {
-  registerLabExpansion();
+  registerMyExpansion();
   mlir::DialectRegistry registry;
-  registry.insert<mlir::lab::LabDialect, mlir::func::FuncDialect,
+  registry.insert<mlir::my::MyDialect, mlir::func::FuncDialect,
                   mlir::arith::ArithDialect>();
   return mlir::asMainReturnCode(
       mlir::MlirOptMain(argc, argv, "Operation definition examples\n", registry));

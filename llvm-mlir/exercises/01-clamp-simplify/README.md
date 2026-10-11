@@ -4,11 +4,11 @@
 
 ## 要实现的行为
 
-`lab.clamp` 将一个有符号 i32 输入限制在闭区间 `[lower, upper]`。当两端相等时，输出应与输入无关。实现名为 `student-simplify-clamp` 的 Pass 中那一条规则，使下面的输入：
+`my.clamp` 将一个有符号 i32 输入限制在闭区间 `[lower, upper]`。当两端相等时，输出应与输入无关。实现名为 `student-simplify-clamp` 的 Pass 中那一条规则，使下面的输入：
 
 ```text
 func.func @clip(%x: i32) -> i32 {
-  %r = lab.clamp %x bounds(-4, -4) : i32
+  %r = my.clamp %x bounds(-4, -4) : i32
   return %r : i32
 }
 ```
@@ -49,7 +49,7 @@ python3 aicompiler-labs/llvm-mlir/exercises/01-clamp-simplify/check.py --stage s
 | `input.mlir` | 读已有正反例，再补一个你自己选择的边界用例及 CHECK |
 | 自建 `NOTES.md` | 简短写出合法性理由、边界选择、结果与预测不符的经历 |
 
-CMake、`student-opt.cpp` 和 Pass 外壳已配好，第一轮可先复用。这个工程链接 `05-op-definition` 的 LabOps 库，源定义保持在原处；修改练习时无需改参考工程、生成文件或上游源码。
+CMake、`student-opt.cpp` 和 Pass 外壳已配好，第一轮可先复用。这个工程链接 `05-op-definition` 的 MyOps 库，源定义保持在原处；修改练习时无需改参考工程、生成文件或上游源码。
 
 ## 先作决定，再写代码
 
@@ -60,7 +60,7 @@ CMake、`student-opt.cpp` 和 Pass 外壳已配好，第一轮可先复用。这
 <details>
 <summary>卡在 API 时再看定位提示</summary>
 
-- `LabOps.h.inc` 中查 `getLowerAttr`、`getUpperAttr`，确认返回类型；常量属性与 SSA Value 是两类对象。
+- `MyOps.h.inc` 中查 `getLowerAttr`、`getUpperAttr`，确认返回类型；常量属性与 SSA Value 是两类对象。
 - 创建 arith 常量的写法可回查 `05-op-definition/ExpandClamp.cpp`，但本练习的匹配条件和目标行为不同。
 - 结果替换回查 PatternRewriter 章；源码路径见 [SOURCE_READING.md](./SOURCE_READING.md)。
 

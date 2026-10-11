@@ -10,7 +10,7 @@ build = lit_config.params.get("build", os.path.join(workspace, "artifacts/builds
 llvm_bin = lit_config.params.get("llvm_bin", os.path.join(workspace, "artifacts/builds/mlir-20.1.8/bin"))
 config.test_exec_root = os.path.join(build, "tests")
 config.substitutions.extend([
- ("%lab-opt", shlex.quote(os.path.join(build, "lab-dialect-opt"))),
- ("%lab-build", shlex.quote(os.path.join(build, "lab-build"))),
+ ("%my-opt", shlex.quote(os.path.join(build, "my-opt"))),
+ ("%my-build", shlex.quote(os.path.join(build, "my-build"))),
  ("%FileCheck", shlex.quote(os.path.join(llvm_bin, "FileCheck"))),
 ])

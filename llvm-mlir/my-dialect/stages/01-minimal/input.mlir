@@ -1,0 +1,6 @@
+module {
+  func.func @test(%a: i32, %b: i32) -> i32 {
+    %0 = my.add %a, %b : i32
+    return %0 : i32
+  }
+}

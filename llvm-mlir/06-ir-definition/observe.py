@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the lesson dialect and show the evidence behind each IR-definition chapter."""
+"""Build the my dialect and show the evidence behind each IR-definition chapter."""
 import argparse
 from datetime import datetime
 from pathlib import Path
@@ -41,17 +41,17 @@ def main():
         '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_CXX_COMPILER=/usr/bin/clang++',
         '-DCMAKE_C_COMPILER=/usr/bin/clang'], show=False)
     run('build', ['cmake', '--build', build, '-j2'], show=False)
-    opt = build / 'lesson-opt'
-    report = '--pass-pipeline=builtin.module(func.func(lesson-report))'
+    opt = build / 'my-opt'
+    report = '--pass-pipeline=builtin.module(func.func(my-report))'
     if args.section in ('all', 'interfaces'):
         show_input('interfaces')
         heading('1. 已注册外部范围模型：查询效果、使用情况与范围')
         run('interfaces-model', [opt, project / 'interfaces.mlir', report, '-o', '/dev/null'])
         show_input('direct')
         heading('先走通直接实现：无需外部模型，操作自己提供范围答案')
-        run('direct-scalar', [build / 'lesson-opt-no-model', project / 'direct.mlir', report])
+        run('direct-scalar', [build / 'my-opt-no-model', project / 'direct.mlir', report])
         heading('2. 同一 IR，不注册范围模型：观察哪条信息消失')
-        run('interfaces-no-model', [build / 'lesson-opt-no-model', project / 'interfaces.mlir', report, '-o', '/dev/null'])
+        run('interfaces-no-model', [build / 'my-opt-no-model', project / 'interfaces.mlir', report, '-o', '/dev/null'])
         heading('3. canonicalize 后：有无效果信息怎样影响死代码删除')
         run('interfaces-cleanup', [opt, project / 'interfaces.mlir', '--canonicalize', '--verify-each'])
     if args.section in ('all', 'types'):

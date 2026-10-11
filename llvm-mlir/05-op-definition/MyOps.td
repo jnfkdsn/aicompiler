@@ -1,18 +1,18 @@
-#ifndef LAB_OPS
-#define LAB_OPS
+#ifndef MY_OPS
+#define MY_OPS
 include "mlir/IR/OpBase.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 // BEGIN: dialect
-def Lab_Dialect : Dialect {
-  let name = "lab";
-  let cppNamespace = "::mlir::lab";
+def My_Dialect : Dialect {
+  let name = "my";
+  let cppNamespace = "::mlir::my";
   let summary = "Operations for the MLIR learning examples";
 }
 // END: dialect
 
 // BEGIN: clamp
-def Lab_ClampOp : Op<Lab_Dialect, "clamp", [Pure]> {
+def My_ClampOp : Op<My_Dialect, "clamp", [Pure]> {
   let summary = "Clamp a signed i32 value to inclusive constant bounds";
   let description = [{
     Interpret input, lower and upper as signed 32-bit integers.
