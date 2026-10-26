@@ -13,7 +13,15 @@ struct SimplifyClamp : OpRewritePattern<my::ClampOp> {
                                PatternRewriter &rewriter) const override {
     // TODO (learner): implement the contract described in README.md.
     // The starter deliberately matches nothing and leaves the input unchanged.
-    return failure();
+    auto lower = op.getLowerAttr();
+    auto upper = op.getUpperAttr();
+    if (lower != upper){
+      return failure();
+    }
+    auto constant =
+      rewriter.create<arith::ConstantOp>(op.getLoc(), lower);
+    rewriter.replaceOp(op, constant.getResult());
+    return success();
   }
 };
 struct ExercisePass : PassWrapper<ExercisePass, OperationPass<func::FuncOp>> {

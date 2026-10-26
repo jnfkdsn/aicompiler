@@ -2,9 +2,11 @@
 
 本仓库保存可复现的 AI Compiler 与算子实验。
 
-LLVM / MLIR 的学习实验从 [llvm-mlir/README.md](llvm-mlir/README.md) 进入；当前主线从 [my.add 增量工程](llvm-mlir/my-dialect/README.md) 进入，其他任务保留在 [MLIR exercises](llvm-mlir/exercises/README.md)。完整示例供观察，练习骨架供实现，文档回归脚本供维护，三类入口分别说明。
+TVM / PyTorch Compiler 当前课程从 [TVM labs](tvm-e2e/README.md) 和 [PyTorch labs](pytorch-compiler/README.md) 进入，固定环境见 [环境说明](environments/ai-compiler-course.md)。每套都有可观察参考程序和独立练习骨架。
 
-整个 workspace 的学习顺序和阶段完成标准见 [`stack_and_roadmap.md`](https://github.com/jnfkdsn/blog/blob/main/docs/notes/compile/ai-compiler/stack_and_roadmap.md)。
+LLVM / MLIR 的学习实验从 [llvm-mlir/README.md](llvm-mlir/README.md) 进入；基础学习后的两个独立任务是 [clamp 简化](llvm-mlir/exercises/01-clamp-simplify/README.md) 和 [按行 Softmax](llvm-mlir/exercises/02-softmax/README.md)。完整示例供按需查阅，练习骨架供实现，文档回归脚本供维护，三类入口分别说明。
+
+跨领域学习顺序见[知识库学习路线](https://github.com/jnfkdsn/blog/blob/main/docs/notes/roadmap.md)，长期能力与项目标准见[编译器能力与项目](https://github.com/jnfkdsn/blog/blob/main/docs/notes/compile/capabilities.md)。
 
 ## 目录
 
