@@ -1,0 +1,251 @@
+{
+  "torch": {
+    "directory": "torch-mlir",
+    "commit": "528d3dcb9a2288743b62df9f4937b1689787e38a",
+    "llvm": "10dbfc4863c9aea2fb237022c3f47fc24c02265e",
+    "llvm_gitlink": "externals/llvm-project",
+    "steps": [
+      [
+        "导出与导入",
+        "python/torch_mlir/fx.py",
+        [
+          "def export_and_import(",
+          "prog.run_decompositions",
+          "fx_importer.import_frozen_program"
+        ]
+      ],
+      [
+        "图节点到操作名",
+        "python/torch_mlir/extras/fx_importer.py",
+        [
+          "def _get_mlir_op_name_for_schema",
+          "mlir_op_name = f\"torch."
+        ]
+      ],
+      [
+        "mm 的转换",
+        "lib/Conversion/TorchToLinalg/Linear.cpp",
+        [
+          "class ConvertAtenMmOp",
+          "mismatching contracting dimension for torch.aten.mm",
+          "Value zeroFill = createZeroInitTensor",
+          "rewriter.replaceOpWithNewOp<tensor::CastOp>"
+        ]
+      ],
+      [
+        "局部合法化",
+        "lib/Conversion/TorchToLinalg/TorchToLinalg.cpp",
+        [
+          "TypeConverter typeConverter",
+          "applyPartialConversion"
+        ]
+      ],
+      [
+        "后端契约闭合",
+        "lib/Conversion/Passes.cpp",
+        [
+          "createTorchBackendToLinalgOnTensorsBackendPipeline(",
+          "createFuncBackendTypeConversionPass",
+          "createVerifyLinalgOnTensorsBackendContractPass"
+        ]
+      ],
+      [
+        "上游期望，不是本机输出",
+        "test/Conversion/TorchToLinalg/basic.mlir",
+        [
+          "torch.aten.mm$basic(",
+          "torch_c.to_builtin_tensor",
+          "torch_c.from_builtin_tensor"
+        ]
+      ]
+    ]
+  },
+  "triton": {
+    "directory": "triton",
+    "commit": "9641643da6c52000c807b5eeed05edaec4402a67",
+    "llvm": "86b69c31642e98f8357df62c09d118ad1da4e16a",
+    "llvm_file": "cmake/llvm-hash.txt",
+    "steps": [
+      [
+        "逻辑块",
+        "python/tutorials/01-vector-add.py",
+        [
+          "def add_kernel",
+          "tl.program_id(axis=0)",
+          "tl.arange(0, BLOCK_SIZE)"
+        ]
+      ],
+      [
+        "读操作的结构",
+        "include/triton/Dialect/Triton/IR/TritonOps.td",
+        [
+          "def TT_LoadOp",
+          "AttrSizedOperandSegments",
+          "Optional<TT_BoolLike>:$mask"
+        ]
+      ],
+      [
+        "元素分布",
+        "include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td",
+        [
+          "def BlockedEncodingAttr",
+          "sizePerThread"
+        ]
+      ],
+      [
+        "访问优化的上游检查",
+        "test/TritonGPU/coalesce.mlir",
+        [
+          "tritongpu-coalesce",
+          "[[row_layout",
+          "[[col_layout"
+        ]
+      ],
+      [
+        "读取的目标消费",
+        "third_party/nvidia/lib/TritonNVIDIAGPUToLLVM/LoadStoreOpToLLVM.cpp",
+        [
+          "struct LoadOpConversion",
+          "getMaskAlignment(mask)",
+          "PTXBuilder ptxBuilder"
+        ]
+      ],
+      [
+        "完整编译阶段",
+        "third_party/nvidia/backend/compiler.py",
+        [
+          "def make_ttir",
+          "def make_ttgir",
+          "def make_llir",
+          "def make_ptx",
+          "def make_cubin",
+          "def add_stages"
+        ]
+      ]
+    ]
+  },
+  "npu": {
+    "directory": "AscendNPU-IR",
+    "commit": "37c6ebc33d1789500014e6a7b2b62164b3cb566b",
+    "llvm": "06913395ef8aca66a9814723f4ccc616570b0fed",
+    "llvm_gitlink": "third-party/llvm-project",
+    "steps": [
+      [
+        "块级向量加法",
+        "bishengir/include/bishengir/Dialect/HIVM/IR/HIVMVectorOps.td",
+        [
+          "def VAddOp : HIVM_ElementwiseBinaryOp<\"vadd\""
+        ]
+      ],
+      [
+        "生成配置",
+        "bishengir/include/bishengir/Dialect/HIVM/IR/CMakeLists.txt",
+        [
+          "set(LLVM_TARGET_DEFINITIONS HIVMVectorOps.td)",
+          "mlir_tablegen(HIVMVectorOps.h.inc",
+          "mlir_tablegen(HIVMVectorOps.cpp.inc"
+        ]
+      ],
+      [
+        "接口契约",
+        "bishengir/lib/Dialect/HIVM/IR/LibraryFunctionOpInterface/LibraryFunctionOpInterfaceImpl.cpp",
+        [
+          "REGISTER_STATIC_MAX_RANK(VAddOp, 3)"
+        ]
+      ],
+      [
+        "转换消费者",
+        "bishengir/lib/Conversion/HIVMToStandard/HIVMToStandard.cpp",
+        [
+          "class VectorOpToLibraryCallPattern",
+          "op.hasPureBufferSemantics()",
+          "VectorOpToLibraryCallPattern<hivm::VAddOp>",
+          "applyPartialConversion(deviceFunc"
+        ]
+      ],
+      [
+        "memory-based 库调用的上游期望",
+        "bishengir/test/Conversion/HIVMToStandard/HIVMToStandard/libcall-noinline-membase.mlir",
+        [
+          "Ascend910B1",
+          "@vadd_1d_half",
+          "hacc.always_inline"
+        ]
+      ],
+      [
+        "Host 调用闭环",
+        "bishengir/test/Integration/HIVM/VecAdd/main.cpp",
+        [
+          "rtDevBinaryRegister",
+          "rtFunctionRegister",
+          "rtKernelLaunch",
+          "aclrtSynchronizeStream"
+        ]
+      ]
+    ]
+  },
+  "ascend": {
+    "directory": "triton-ascend",
+    "commit": "2badfc89e70a9b7a5e88463a116c2feddce4b101",
+    "llvm": "b5cc222d7429fe6f18c787f633d5262fac2e676f",
+    "llvm_file": "cmake/llvm-hash.txt",
+    "dependencies": {
+      "third_party/ascend/AscendNPU-IR": "47a0229060e37f92a49cfb82d81c756628e6c7ae"
+    },
+    "steps": [
+      [
+        "阶段分支",
+        "third_party/ascend/backend/compiler.py",
+        [
+          "def add_stages",
+          "if options.force_simt_only",
+          "stages[\"ttadapter\"]"
+        ]
+      ],
+      [
+        "adapter处理",
+        "third_party/ascend/backend/compiler.py",
+        [
+          "def ttir_to_linalg",
+          "add_triton_to_structure",
+          "add_triton_to_linalg"
+        ]
+      ],
+      [
+        "转换合法性",
+        "third_party/ascend/lib/TritonToLinalg/TritonToLinalgPass.cpp",
+        [
+          "populateFunctionOpInterfaceTypeConversionPattern",
+          "applyPartialConversion"
+        ]
+      ],
+      [
+        "mask与局部块",
+        "third_party/ascend/lib/TritonToLinalg/LoadStoreConverter.cpp",
+        [
+          "fillTensorWithOtherForMaskScenario",
+          "rewriter.create<linalg::FillOp>",
+          "rewriter.create<bufferization::ToTensorOp>"
+        ]
+      ],
+      [
+        "外部工具",
+        "third_party/ascend/backend/compiler.py",
+        [
+          "def linalg_to_bin_enable_npu_compile_A2_A3",
+          "_get_npucompiler_path()",
+          "--enable-triton-kernel-compile=true"
+        ]
+      ],
+      [
+        "运行时启动",
+        "third_party/ascend/backend/driver.py",
+        [
+          "def load_binary",
+          "rtKernelLaunch(func",
+          "rtKernelLaunchWithFlagV2"
+        ]
+      ]
+    ]
+  }
+}
