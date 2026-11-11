@@ -1,0 +1,9 @@
+#include "MyOps.td"
+Constraint IsZero(v: Value);
+Pattern RemoveRightZero {
+  let x: Value;
+  let z: Value;
+  IsZero(z);
+  let root = op<my.add>(x, z);
+  replace root with x;
+}

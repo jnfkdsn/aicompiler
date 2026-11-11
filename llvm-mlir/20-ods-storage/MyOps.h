@@ -1,0 +1,17 @@
+#ifndef MY_STORAGE_H
+#define MY_STORAGE_H
+#include "mlir/Bytecode/BytecodeOpInterface.h"
+#include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Dialect.h"
+#include "mlir/IR/OpDefinition.h"
+#include "mlir/Interfaces/SideEffectInterfaces.h"
+#include "MyDialect.h.inc"
+#include "MyTypeInterfaces.h.inc"
+#include "MyAttrInterfaces.h.inc"
+#define GET_TYPEDEF_CLASSES
+#include "MyTypes.h.inc"
+#define GET_ATTRDEF_CLASSES
+#include "MyAttrs.h.inc"
+#define GET_OP_CLASSES
+#include "MyOps.h.inc"
+#endif
