@@ -1,0 +1,5 @@
+nanobind==2.4.0
+pybind11==2.13.6
+numpy==2.1.2
+PyYAML==6.0.1
+ml_dtypes==0.5.3
